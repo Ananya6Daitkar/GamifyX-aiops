@@ -38,3 +38,4 @@ A small, ready-to-edit project that implements:
 - `evidence/` folder with placeholders
 
 Good luck — edit, run, record the demo, and submit! 🚀
+# GamifyX-aiops
