@@ -1,0 +1,11 @@
+{
+  "name": "gamifyx-backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "express": "4.18.2"
+  }
+}

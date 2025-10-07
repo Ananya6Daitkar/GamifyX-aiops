@@ -1,0 +1,78 @@
+name: CI-CD Pipeline (Demo)
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend deps
+        run: |
+          cd frontend
+          npm install
+
+      - name: Lint & Format (simulated)
+        run: echo "Lint passed"
+
+      - name: Run unit tests (simulated)
+        run: echo "Tests passed"
+
+      - name: Security scan (simulated)
+        run: echo "Semgrep/Trivy results placeholder"
+
+      - name: Build Docker image (simulated)
+        run: echo "docker build -t ghcr.io/${{ github.repository }}/gamifyx:demo ."
+
+      - name: AIOps: PR summary (simulated)
+        if: github.event_name == 'pull_request'
+        run: |
+          echo '{"title":"'$GITHUB_HEAD_REF'","body":"Sample PR body for demo"}' > /tmp/pr.json
+          python3 aiops/pr_summary.py < /tmp/pr.json > /tmp/pr_summary.txt
+          cat /tmp/pr_summary.txt
+
+      - name: Upload artifact (image tag)
+        run: echo "simulated artifact uploaded"
+
+  deploy-staging:
+    needs: checks
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Deploy to staging (simulated)
+        run: echo "Deployed to staging - demo"
+
+      - name: Smoke tests (simulated)
+        run: echo "Smoke tests OK"
+
+      - name: Post-deploy observability hook (simulated)
+        run: echo "Metrics: latency 120ms, errors 0.0%"
+
+  promote-to-prod:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Await manual approval
+        uses: andymckay/approval-action@v1
+        with:
+          reviewers: 'you@example.com'
+
+      - name: Risk gate (AIOps)
+        run: |
+          echo '{"diff_lines": 20, "test_coverage": 85}' > /tmp/risk.json
+          python3 aiops/risk_gate.py < /tmp/risk.json
+
+      - name: Deploy to prod (simulated)
+        run: echo "Deployed to prod - demo"
+
