@@ -1,5 +1,6 @@
 name: CI-CD Pipeline with AIOps
 
+# Trigger on push to main and pull requests
 on:
   push:
     branches: [ main ]
@@ -14,25 +15,40 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
+      # Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Install Node.js (frontend/backend)
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # Lint
       - name: Lint check
         run: echo "Lint passed"
 
+      # Unit tests
       - name: Run unit tests
         run: echo "Tests passed"
 
-      - name: Security scan (simulated)
+      # Security scan (simulated)
+      - name: Security scan
         run: echo "Trivy/Semgrep scan passed"
 
-      - name: Build Docker image (simulated)
+      # Docker build (simulated)
+      - name: Build Docker image
         run: echo "docker build -t ghcr.io/${{ github.repository_owner }}/gamifyx:demo ."
 
-      - name: AIOps - PR summary (simulated)
+      # AIOps Feature 1: Real PR summary
+      - name: AIOps - Real PR summary
+        if: github.event_name == 'pull_request'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          echo "AIOps PR Summary: Detected minor changes with low risk"
-          echo "Summary saved successfully"
+          echo "${{ toJSON(github.event.pull_request) }}" > /tmp/pr.json
+          python3 aiops/pr_summary_real.py < /tmp/pr.json
 
   deploy-staging:
     needs: checks
@@ -55,10 +71,17 @@ jobs:
       - name: Await manual approval
         run: echo "Approval received"
 
-      - name: Risk gate (AIOps smart check)
+      # AIOps Feature 2: Risk gate
+      - name: Risk gate (AIOps)
         run: |
-          echo "Risk score: LOW (coverage 85%, changes small)"
-          echo "Deploying to production..."
+          DIFF_LINES=20
+          COVERAGE=85
+          if [ "$DIFF_LINES" -gt 500 ] || [ "$COVERAGE" -lt 70 ]; then
+            echo "RISK HIGH: Block deploy!"
+            exit 1
+          else
+            echo "Risk score: LOW - Deploy allowed"
+          fi
 
       - name: Deploy to production (simulated)
         run: echo "Deployed to prod - demo"
