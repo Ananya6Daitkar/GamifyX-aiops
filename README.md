@@ -39,3 +39,5 @@ A small, ready-to-edit project that implements:
 
 Good luck — edit, run, record the demo, and submit! 🚀
 # GamifyX-aiops
+## Demo Video
+Watch the CI/CD + AIOps demo here: [Demo Video Link](https://www.veed.io/view/6e12db99-bb09-499c-afe7-beec66d7e575?panel=share)
