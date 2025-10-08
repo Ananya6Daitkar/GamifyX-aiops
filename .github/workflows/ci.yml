@@ -1,87 +1,49 @@
-name: CI-CD Pipeline with AIOps
+name: AIOps CI Pipeline
 
-# Trigger on push to main and pull requests
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
-permissions:
-  contents: read
-  packages: write
-
 jobs:
-  checks:
+  build-test-scan:
+    name: Run tests, scan, and risk analysis
     runs-on: ubuntu-latest
+
     steps:
-      # Checkout code
-      - name: Checkout code
+      - name: ⬇️ Checkout code
         uses: actions/checkout@v3
 
-      # Install Node.js (frontend/backend)
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
         with:
-          node-version: '18'
+          python-version: 3.10
 
-      # Lint
-      - name: Lint check
-        run: echo "Lint passed"
-
-      # Unit tests
-      - name: Run unit tests
-        run: echo "Tests passed"
-
-      # Security scan (simulated)
-      - name: Security scan
-        run: echo "Trivy/Semgrep scan passed"
-
-      # Docker build (simulated)
-      - name: Build Docker image
-        run: echo "docker build -t ghcr.io/${{ github.repository_owner }}/gamifyx:demo ."
-
-      # AIOps Feature 1: Real PR summary
-      - name: AIOps - Real PR summary
-        if: github.event_name == 'pull_request'
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: 📦 Install dependencies
         run: |
-          echo "${{ toJSON(github.event.pull_request) }}" > /tmp/pr.json
-          python3 aiops/pr_summary_real.py < /tmp/pr.json
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit pytest
 
-  deploy-staging:
-    needs: checks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to staging (simulated)
-        run: echo "Deployed to staging - demo"
-
-      - name: Run smoke tests
-        run: echo "Smoke tests passed"
-
-      - name: Collect metrics (simulated)
+      - name: 🧪 Run unit tests
         run: |
-          echo "Metrics: latency 120ms, errors 0.0%"
+          pytest
 
-  promote-to-prod:
-    needs: deploy-staging
-    runs-on: ubuntu-latest
-    steps:
-      - name: Await manual approval
-        run: echo "Approval received"
-
-      # AIOps Feature 2: Risk gate
-      - name: Risk gate (AIOps)
+      - name: 🔐 Run Bandit security scan
         run: |
-          DIFF_LINES=20
-          COVERAGE=85
-          if [ "$DIFF_LINES" -gt 500 ] || [ "$COVERAGE" -lt 70 ]; then
-            echo "RISK HIGH: Block deploy!"
-            exit 1
-          else
-            echo "Risk score: LOW - Deploy allowed"
-          fi
+          bandit -r . || true  # Continue even if Bandit finds issues
 
-      - name: Deploy to production (simulated)
-        run: echo "Deployed to prod - demo"
+      - name: 🧠 Run AIOps risk analysis
+        run: |
+          python actual.py
+
+      - name: 📁 Upload AI-Ops summary as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: aiops-summary
+          path: aiops_summary.json
+
+      # - name: 🚀 Deploy to production (optional)
+      #   run: |
+      #     echo "Deploy step goes here (e.g., Heroku, AWS, etc.)"
