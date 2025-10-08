@@ -1,4 +1,4 @@
- name: AIOps CI Pipeline
+name: AIOps CI Pipeline
 
 on:
   push:
