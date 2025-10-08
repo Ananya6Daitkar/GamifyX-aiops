@@ -39,7 +39,7 @@ jobs:
           python actual.py
 
       - name: 📁 Upload AI-Ops summary as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2   # Change this line to v2
         with:
           name: aiops-summary
           path: aiops_summary.json
