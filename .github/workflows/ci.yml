@@ -1,4 +1,4 @@
-name: AIOps CI Pipeline
+ name: AIOps CI Pipeline
 
 on:
   push:
@@ -38,8 +38,14 @@ jobs:
         run: |
           python actual.py
 
+      # Debugging: Check if the aiops_summary.json file exists
+      - name: Debug: Check if aiops_summary.json exists
+        run: |
+          echo "Checking if aiops_summary.json exists..."
+          ls -l aiops_summary.json  # This will list the file and show its details
+
       - name: 📁 Upload AI-Ops summary as artifact
-        uses: actions/upload-artifact@v2   # Change this line to v2
+        uses: actions/upload-artifact@v2
         with:
           name: aiops-summary
           path: aiops_summary.json
